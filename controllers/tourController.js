@@ -31,7 +31,7 @@ exports.getAllTours = async (req, res) => {
     else{
       query.sort("-createdAt");
     }
-// FIELD LIMITING
+// FIELD LIMITIN
 
    if(req.query.fields){
     console.log(`the select is ${req.query.fields}`)
