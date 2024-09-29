@@ -122,3 +122,68 @@ exports.deleteTour = async (req, res) => {
   }
 
 };
+
+
+exports.getToursStat= async (req,res)=>{
+  try{
+      const stats= await Tour.aggregate([
+     {$match:{
+      ratingAverage:{$gte:4.5}
+     }},
+     {$group:{
+      _id:{$toUpper:'$difficulty'},
+      numTours:{$sum:1},
+      numRating:{$sum:'$ratingsQuantity'},
+      avrRating:{$avg:'$ratingAverage'},
+      avrPrice:{$avg:'$price'},
+      minPrice:{$min:'$price'},
+      maxPrice:{$max:'$price'}
+
+     }},
+     {
+      $sort:{$avrPrice:1}
+     }
+  ])
+    res.status(200).json({
+    status: 'success',
+    data:stats
+  });
+  }
+  catch(error){
+    res.status(404).json({
+    status: 'fail',
+    error:error.message
+  });
+  }
+
+}
+
+exports.monthly_plan = async (req,res)=>{
+  try{
+      const year=req.params.year*1;
+      console.log(year)
+      const plan = await Tour.aggregate([
+        {
+          $unwind:'$startDates'
+        },
+        {
+         $match:{
+          startDates:{$gte:new Date(`${year}-01-01`),$lte:new Date(`${year}-12-31`)}
+         } 
+        }
+      ])
+
+    res.status(200).json({
+    status: 'success',
+    data:plan
+  });
+  }
+  catch(error){
+       res.status(404).json({
+    status: 'fail',
+    error:error.message
+  });
+  }
+    
+
+}
