@@ -170,11 +170,28 @@ exports.monthly_plan = async (req,res)=>{
          $match:{
           startDates:{$gte:new Date(`${year}-01-01`),$lte:new Date(`${year}-12-31`)}
          } 
+        },
+        {
+          $group:{
+            _id:{$month:'$startDates'},
+            numOfTourStarts:{$sum:1},
+            tours:{$push:"$name"}
+          }
+        },
+        {$addFields:{month:'$_id'}},
+        {$project:{
+          _id:0
+        }}
+        ,
+        {
+          $sort:{numOfTourStarts:-1}
         }
+        
       ])
 
     res.status(200).json({
     status: 'success',
+    length:plan.length,
     data:plan
   });
   }
