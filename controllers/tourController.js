@@ -1,60 +1,25 @@
 const fs = require('fs');
 const Tour=require('./../models/tourModel');
 const { error } = require('console');
+const apiFeutures=require('./../utils/apiFeutures')
 exports.get_top_cheap=(req,res,next)=>{
+  
   req.query.sort='-price',
-  req.query.limit='5',
-  req.query.fields='name,price,ratingAverage'
+  req.query.limit='3',
+  req.query.fields='name,price,ratingAverage',
+  req.query.page='3'
+  console.log(req.query)
   next()
 }
-exports.getAllTours = async (req, res) => {
+
+
  
-  // const queryObject={...req.query};
+exports.getAllTours = async (req, res) => {
    try{
-    const queryObject={...req.query}
-    const excludeQuery=['page','sort','limit','fields']
-    excludeQuery.forEach(el=>{
-      delete queryObject[el]
-    })
+  console.log('after midlware ',req.query)
+  const features=new apiFeutures(Tour.find(),req.query).filter().sort().limit().pagination()
+  const all_tours=await features.query;
   
- let queryString=JSON.stringify(queryObject);
-  queryString=queryString.replace(/\b(gte|gt|lte|lt)\b/g,match=>`$${match}`)
-     console.log(queryObject)
-     console.log(JSON.parse(queryString))
-   
-    let query= Tour.find(JSON.parse(queryString));
-  // SORTING
-    if(req.query.sort){
-      const sortBy=req.query.sort.split(',').join(' ');
-      query=query.sort(sortBy)
-    }
-    else{
-      query.sort("-createdAt");
-    }
-// FIELD LIMITIN
-
-   if(req.query.fields){
-    console.log(`the select is ${req.query.fields}`)
-    const selectBy=req.query.fields.split(',').join(' ');
-    query=query.select(selectBy)
-   }
-   else{ query=query.select('-__v')}
-
-  //  PAGINATION
- const page=req.query.page*1
-    const limit=req.query.limit*1
-    const skip=(page-1)*limit
-  if(req.query.page){
-    
-    const tourNumber=await query.countDocuments()
-    if(skip>=tourNumber ) throw new Error('there is NO page')
-    query=query.skip(skip).limit(limit)
-  }
-
-    const all_tours=await query;
-    // const all_tours=await Tour.find().where("difficulty").equals("easy")
-  // console.log(req.requestTime);
-
   res.status(200).json({
     status: 'success',
     requestedAt: req.requestTime,
@@ -63,7 +28,9 @@ exports.getAllTours = async (req, res) => {
       all_tours
     }
   });
+
    }
+
    catch(error){
     res.status(404).json({
       status:'fail',
