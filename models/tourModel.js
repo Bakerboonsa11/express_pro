@@ -49,13 +49,39 @@ const tourSchema= new mongoose.Schema({
     type:Date,
     default:Date.now()
   },
-  startDates:[Date]
+  startDates:[Date],
+  secret_tour:{
+    type:Boolean,
+    default:false
+  },
 },{
   toJSON:{virtual:true},
   toObject:{virtual:true}
 })
 tourSchema.virtual("duration_weak",function(){
   return this.duration/7
+})
+
+// middileware on mongdb
+
+tourSchema.pre(/^find/,function(next){
+  console.log("the midle ware is started")
+  this.find({secret_tour:{$ne:true}})
+  this.start=Date.now()
+  console.log("this in pre is",this )
+  next()
+})
+
+tourSchema.post(/^find/,function(docs,next){
+  console.log(`the time it takes is ${Date.now()-this.start}`)
+  console.log('this in post is ',this)
+   console.log(docs)
+  next()
+})
+
+tourSchema.pre('aggregate',function(next){
+      this.pipeline().unshift({$match:{secret_tour:{$ne:true}}})
+      next()
 })
 
 const Tour=mongoose.model("Tour",tourSchema)
