@@ -2,6 +2,7 @@ const fs = require('fs');
 const Tour=require('./../models/tourModel');
 const { error } = require('console');
 const apiFeutures=require('./../utils/apiFeutures')
+
 exports.get_top_cheap=(req,res,next)=>{
   
   req.query.sort='-price',
@@ -16,7 +17,7 @@ exports.get_top_cheap=(req,res,next)=>{
  
 exports.getAllTours = async (req, res) => {
    try{
-  console.log('after midlware ',req.query)
+  
   const features=new apiFeutures(Tour.find(),req.query).filter().sort().limit().pagination()
   const all_tours=await features.query;
   

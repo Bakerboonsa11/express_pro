@@ -4,6 +4,8 @@ const tourSchema= new mongoose.Schema({
     type:String,
     required:[true,"tours name must have name"],
     unique:true,
+    maxlength:[20,"the length must be lessan 20"],
+    minlength:[10,"the minimum length must be 10"],
     trim:true
   },
   duration:{
@@ -16,11 +18,19 @@ const tourSchema= new mongoose.Schema({
   },
   difficulty:{
     type:String,
-    required:[true,"defficality is required"]
+    required:[true,"defficality is required"],
+    enum:{
+      value:['easy','medium','defficult'],
+      message:"the values must be easy,meduim or difficult"
+      },
+
   },
   ratingAverage:{
     type:Number,
-    default:4.5
+    default:4.5,
+    max:[5.0,'maximum is 5'],
+    min:[1.0,'minimum is 1.0']
+
   },
    ratingsQuantity:{
     type:Number,
@@ -30,7 +40,15 @@ const tourSchema= new mongoose.Schema({
     type:Number,
     required:[true,"price is required"]
   },
-  priceDiscount:Number,
+  priceDiscount:{
+    type:Number,
+    validate:{
+      validator:function(val){
+        return val<this.price
+      },
+     message:'discount ({VALUE}) mus be less than the price'
+    }
+  },
   summary:{
     type:String,
     trim:true,
@@ -99,4 +117,5 @@ module.exports=Tour;
 // pre and post
 // specifically they are four types of middleware 
 // 1 document middleware 2 query middleware 3 model middleware and aggregation middlewarr
-
+// they are built in data validation custom data validation  and ther is liarary called validtor that is used to validate 
+// fields the just download them and use it by requring them they are many methods in it
